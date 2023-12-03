@@ -38,3 +38,31 @@ def lambda_handler(event, context):
 # aws lambda create-function --function-name addObjects --runtime python3.10 --role arn:aws:iam::283120089861:role/LambdaDeploymentRole --handler addObjects.lambda_handler --zip-file fileb://addObjects.zip
 
 
+
+#DIY - 
+
+# Lambda function to check if the bucket with name lab-bucket-13443 exists
+import boto3
+
+def lambda_handler(event, context):
+    s3 = boto3.client('s3')
+    response = s3.list_buckets()
+    for bucket in response['Buckets']:
+        if bucket['Name'] == 'lab-bucket-13443':
+            # enable s3 versioning
+            s3.put_bucket_versioning(Bucket='lab-bucket-13443', VersioningConfiguration={'Status': 'Enabled'})
+            
+            # delete an object from lab-bucket
+            s3.delete_object(Bucket='lab-bucket-13443', Key='test.txt')
+            return True
+        else:
+            #create
+            s3.create_bucket(Bucket='lab-bucket-13443')
+            
+            #upload test.txt to lab-bucket-13443
+            s3.upload_file('test.txt', 'lab-bucket-13443', 'test.txt')
+            
+            # create a new object in lab-bucket-13443
+            s3.put_object(Bucket='lab-bucket-13443', Key='new_object.txt', Body='Testing Amazon CodeWhisperer in AWS Cloud9')
+            
+    return "Success"
